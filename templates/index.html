@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hello Werner — Flask App</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --color-orange:    #FF7A00;
+    --color-red:       #E01B24;
+    --color-blue:      #005CFC;
+    --color-cyan:      #00D6FD;
+    --color-gray-light: #BEBEBE;
+    --color-gray-mid:  #777777;
+    --color-gray-dark: #464646;
+    --bg-dark-soft:    #1E2227;
+    --font-primary:    "Helvetica Neue", Arial, sans-serif;
+    --font-mono:       "JetBrains Mono", "Courier New", monospace;
+    --radius-md:       12px;
+    --radius-pill:     999px;
+  }
+
+  html, body {
+    min-height: 100vh;
+    font-family: var(--font-primary);
+    background: var(--bg-dark-soft);
+    color: #FFFFFF;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Hintergrund-Akzente */
+  .page::before {
+    content: '';
+    position: absolute;
+    top: -200px; right: -200px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(0,92,252,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .page::after {
+    content: '';
+    position: absolute;
+    bottom: -150px; left: -150px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(255,122,0,0.10) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .card {
+    position: relative;
+    z-index: 1;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 20px;
+    padding: 64px 72px;
+    max-width: 680px;
+    width: 100%;
+    text-align: center;
+  }
+
+  /* Logomark */
+  .logomark {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 32px;
+    display: block;
+  }
+
+  /* Badge Flask */
+  .badge-flask {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-cyan);
+    border: 1px solid rgba(0,214,253,0.3);
+    background: rgba(0,214,253,0.08);
+    padding: 5px 14px;
+    border-radius: var(--radius-pill);
+    margin-bottom: 28px;
+  }
+
+  .badge-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--color-cyan);
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+
+  /* Headline */
+  .headline {
+    font-size: 56px;
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin-bottom: 24px;
+  }
+
+  .headline .plain { color: #FFFFFF; }
+
+  /* Animierter Farbdurchlauf auf "Werner" */
+  .headline .animated-gradient {
+    background: linear-gradient(
+      90deg,
+      #FF7A00 0%,
+      #E01B24 25%,
+      #FF7A00 50%,
+      #E01B24 75%,
+      #FF7A00 100%
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradientShift 3s linear infinite;
+  }
+
+  @keyframes gradientShift {
+    0%   { background-position: 0% center; }
+    100% { background-position: 200% center; }
+  }
+
+  /* Subline */
+  .subline {
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.7;
+    color: var(--color-gray-light);
+    margin-bottom: 40px;
+    max-width: 420px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* Divider */
+  .divider {
+    width: 48px;
+    height: 2px;
+    background: linear-gradient(135deg, #FF7A00, #E01B24);
+    border-radius: 2px;
+    margin: 0 auto 32px;
+  }
+
+  /* Serverzeit Block */
+  .serverzeit-block {
+    background: rgba(0,214,253,0.06);
+    border: 1px solid rgba(0,214,253,0.15);
+    border-radius: var(--radius-md);
+    padding: 16px 24px;
+    margin-bottom: 32px;
+  }
+
+  .serverzeit-label {
+    font-size: 11px;
+    font-weight: 300;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-gray-mid);
+    margin-bottom: 6px;
+  }
+
+  .serverzeit-value {
+    font-family: var(--font-mono);
+    font-size: 18px;
+    color: var(--color-cyan);
+    letter-spacing: 0.04em;
+  }
+
+  /* Status Badges */
+  .badges {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 32px;
+  }
+
+  .badge {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: var(--radius-pill);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: var(--color-gray-light);
+  }
+
+  .badge.done {
+    border-color: rgba(255,122,0,0.4);
+    color: var(--color-orange);
+    background: rgba(255,122,0,0.08);
+  }
+
+  .badge.active {
+    border-color: rgba(0,214,253,0.4);
+    color: var(--color-cyan);
+    background: rgba(0,214,253,0.08);
+  }
+
+  /* Meta */
+  .meta {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--color-gray-dark);
+    letter-spacing: 0.04em;
+  }
+
+  .meta span { color: var(--color-orange); }
+
+  /* Footer */
+  .footer {
+    margin-top: 48px;
+    font-size: 12px;
+    font-weight: 300;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-gray-dark);
+  }
+
+  .footer strong {
+    color: var(--color-gray-mid);
+    font-weight: 500;
+  }
+
+  @media (max-width: 600px) {
+    .card { padding: 40px 24px; }
+    .headline { font-size: 40px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="card">
+
+    <!-- Logomark -->
+    <svg class="logomark" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="8"  y="10" width="20" height="80" rx="10" fill="#FF7A00"/>
+      <rect x="36" y="10" width="20" height="80" rx="10" fill="#FF7A00"/>
+      <rect x="62" y="10" width="50" height="18" rx="9" fill="#005CFC"/>
+      <rect x="62" y="34" width="36" height="18" rx="9" fill="#005CFC"/>
+      <rect x="78" y="52" width="20" height="28" rx="10" fill="#005CFC"/>
+      <circle cx="105" cy="100" r="12" fill="#005CFC"/>
+      <text x="105" y="105" text-anchor="middle" font-family="Helvetica Neue, Arial, sans-serif" font-size="10" font-weight="700" fill="#FF7A00">AI</text>
+    </svg>
+
+    <div class="badge-flask">
+      <span class="badge-dot"></span>
+      Flask App · Python
+    </div>
+
+    <h1 class="headline">
+      <span class="plain">Hello,&nbsp;</span><span class="animated-gradient">Werner.</span>
+    </h1>
+
+    <p class="subline">
+      Diese Seite wird von einem Python-Server ausgeliefert.
+      Jeder Request ist live — Logik, Daten, Zeit.
+    </p>
+
+    <!-- Serverzeit vom Flask-Server -->
+    <div class="serverzeit-block">
+      <p class="serverzeit-label">Server-Zeit (Europe/Berlin)</p>
+      <p class="serverzeit-value">{{ serverzeit }}</p>
+    </div>
+
+    <div class="badges">
+      <span class="badge done">Static Site ✓</span>
+      <span class="badge active">Flask App ✓</span>
+      <span class="badge">Node.js ⏳</span>
+    </div>
+
+    <div class="divider"></div>
+
+    <p class="meta">Branch: <span>werner/ws-6-flask-app-hello-werner</span></p>
+
+  </div>
+
+  <p class="footer">
+    <strong>Werner Schneider</strong> · KI-Transformation · Beratung · Interim Management
+  </p>
+</div>
+</body>
+</html>
